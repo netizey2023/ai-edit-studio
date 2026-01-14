@@ -2,7 +2,12 @@ import type { Config } from "tailwindcss";
 
 export default {
   darkMode: ["class"],
-  content: ["./pages/**/*.{ts,tsx}", "./components/**/*.{ts,tsx}", "./app/**/*.{ts,tsx}", "./src/**/*.{ts,tsx}"],
+  content: [
+    "./pages/**/*.{ts,tsx}",
+    "./components/**/*.{ts,tsx}",
+    "./app/**/*.{ts,tsx}",
+    "./src/**/*.{ts,tsx}",
+  ],
   prefix: "",
   theme: {
     container: {
@@ -13,6 +18,9 @@ export default {
       },
     },
     extend: {
+      fontFamily: {
+        sans: ['Inter', 'system-ui', 'sans-serif'],
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
@@ -47,6 +55,29 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        editor: {
+          bg: "hsl(var(--editor-bg))",
+          panel: "hsl(var(--editor-panel))",
+          "panel-header": "hsl(var(--editor-panel-header))",
+          border: "hsl(var(--editor-border))",
+          active: "hsl(var(--editor-active))",
+        },
+        clip: {
+          video: "hsl(var(--clip-video))",
+          audio: "hsl(var(--clip-audio))",
+          ai: "hsl(var(--clip-ai))",
+          text: "hsl(var(--clip-text))",
+        },
+        timeline: {
+          bg: "hsl(var(--timeline-bg))",
+          track: "hsl(var(--timeline-track))",
+          ruler: "hsl(var(--timeline-ruler))",
+        },
+        playhead: "hsl(var(--playhead))",
+        tool: {
+          hover: "hsl(var(--tool-hover))",
+          active: "hsl(var(--tool-active))",
+        },
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
           foreground: "hsl(var(--sidebar-foreground))",
@@ -65,25 +96,22 @@ export default {
       },
       keyframes: {
         "accordion-down": {
-          from: {
-            height: "0",
-          },
-          to: {
-            height: "var(--radix-accordion-content-height)",
-          },
+          from: { height: "0" },
+          to: { height: "var(--radix-accordion-content-height)" },
         },
         "accordion-up": {
-          from: {
-            height: "var(--radix-accordion-content-height)",
-          },
-          to: {
-            height: "0",
-          },
+          from: { height: "var(--radix-accordion-content-height)" },
+          to: { height: "0" },
+        },
+        "playhead-pulse": {
+          "0%, 100%": { opacity: "1" },
+          "50%": { opacity: "0.7" },
         },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+        "playhead-pulse": "playhead-pulse 1s ease-in-out infinite",
       },
     },
   },
