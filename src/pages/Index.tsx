@@ -1,4 +1,4 @@
-import { VideoEditor } from '@/components/editor/VideoEditor';
+import { VideoEditor } from '@/features/editor/components/VideoEditor';
 
 const Index = () => {
   return <VideoEditor />;
