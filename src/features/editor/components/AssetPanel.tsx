@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { 
-  Film, 
-  Music, 
-  Image, 
+import {
+  Film,
+  Music,
+  Image,
   Folder,
   Sparkles,
   Search,
@@ -34,7 +34,7 @@ const mockAssets: Asset[] = [
 ];
 
 const transitions = [
-  'Cross Dissolve', 'Dip to Black', 'Dip to White', 'Wipe Left', 
+  'Cross Dissolve', 'Dip to Black', 'Dip to White', 'Wipe Left',
   'Wipe Right', 'Push', 'Slide', 'Zoom', 'Spin', 'Blur'
 ];
 
@@ -43,7 +43,11 @@ const effects = [
   'Noise Reduction', 'Stabilization', 'Speed Ramp', 'Crop', 'Mirror'
 ];
 
-export function AssetPanel() {
+interface AssetPanelProps {
+  activeCategory: string;
+}
+
+export function AssetPanel({ activeCategory }: AssetPanelProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [webSearchQuery, setWebSearchQuery] = useState('');
@@ -58,29 +62,29 @@ export function AssetPanel() {
 
   return (
     <div className="flex flex-col h-full bg-editor-panel border-r border-editor-border">
-      <Tabs defaultValue="project" className="flex flex-col h-full">
+      <Tabs value={activeCategory === 'media' ? 'project' : activeCategory} className="flex flex-col h-full">
         <div className="editor-panel-header flex items-center justify-between">
           <TabsList className="bg-transparent h-auto p-0 gap-4">
-            <TabsTrigger 
-              value="project" 
+            <TabsTrigger
+              value="project"
               className="px-0 py-1 text-xs data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none"
             >
               Project
             </TabsTrigger>
-            <TabsTrigger 
-              value="transitions" 
+            <TabsTrigger
+              value="transitions"
               className="px-0 py-1 text-xs data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none"
             >
               Transitions
             </TabsTrigger>
-            <TabsTrigger 
-              value="effects" 
+            <TabsTrigger
+              value="effects"
               className="px-0 py-1 text-xs data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none"
             >
               Effects
             </TabsTrigger>
-            <TabsTrigger 
-              value="ai-search" 
+            <TabsTrigger
+              value="ai-search"
               className="px-0 py-1 text-xs data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none flex items-center gap-1"
             >
               <Sparkles className="w-3 h-3" />
@@ -107,7 +111,7 @@ export function AssetPanel() {
               <Plus className="w-4 h-4" />
             </Button>
           </div>
-          
+
           <div className="flex-1 overflow-y-auto scrollbar-thin p-2">
             {viewMode === 'grid' ? (
               <div className="grid grid-cols-2 gap-2">
@@ -194,7 +198,7 @@ export function AssetPanel() {
               Search for images, videos, and audio from the web using AI-powered multimodal search.
             </p>
           </div>
-          
+
           <div className="flex-1 flex items-center justify-center p-4">
             <div className="text-center">
               <Globe className="w-12 h-12 mx-auto mb-3 text-muted-foreground/50" />

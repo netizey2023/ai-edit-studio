@@ -19,11 +19,7 @@ import {
 import { Switch } from '@/shared/ui/switch';
 import { Separator } from '@/shared/ui/separator';
 
-interface Clip {
-  id: string;
-  name: string;
-  type: 'video' | 'audio' | 'ai';
-}
+import { Clip } from '../types';
 
 interface InspectorPanelProps {
   selectedClip: Clip | null;

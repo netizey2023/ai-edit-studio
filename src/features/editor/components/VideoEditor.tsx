@@ -10,19 +10,14 @@ import { AssetPanel } from './AssetPanel';
 import { PreviewMonitor } from './PreviewMonitor';
 import { InspectorPanel } from './InspectorPanel';
 import { Timeline } from './Timeline';
-import { TimelineToolbar } from './TimelineToolbar';
 
-interface SelectedClip {
-  id: string;
-  name: string;
-  type: 'video' | 'audio' | 'ai';
-}
+import { Clip } from '../types';
 
 export function VideoEditor() {
   const [activeTab, setActiveTab] = useState('media');
   const [currentTime, setCurrentTime] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [selectedClip, setSelectedClip] = useState<SelectedClip | null>(null);
+  const [selectedClip, setSelectedClip] = useState<Clip | null>(null);
 
   const duration = 20; // Total duration in seconds
 
@@ -56,9 +51,9 @@ export function VideoEditor() {
           setIsPlaying(false);
           return 0;
         }
-        return prev + 1 / 30; // ~30fps
+        return prev + 1 / 60; // ~60fps
       });
-    }, 1000 / 30);
+    }, 1000 / 60);
 
     return () => clearInterval(interval);
   }, [isPlaying, duration]);
@@ -71,7 +66,7 @@ export function VideoEditor() {
     setCurrentTime(time);
   }, []);
 
-  const handleClipSelect = useCallback((clip: SelectedClip | null) => {
+  const handleClipSelect = useCallback((clip: Clip | null) => {
     setSelectedClip(clip);
   }, []);
 
@@ -120,17 +115,14 @@ export function VideoEditor() {
 
           {/* Lower Section (Timeline) */}
           <ResizablePanel defaultSize={40} minSize={20}>
-            <div className="h-full flex flex-col">
-              <TimelineToolbar />
-              <div className="flex-1 overflow-hidden">
-                <Timeline
-                  currentTime={currentTime}
-                  duration={duration}
-                  onSeek={handleSeek}
-                  onClipSelect={handleClipSelect}
-                  selectedClipId={selectedClip?.id ?? null}
-                />
-              </div>
+            <div className="flex-1 overflow-hidden">
+              <Timeline
+                currentTime={currentTime}
+                duration={duration}
+                onSeek={handleSeek}
+                onClipSelect={handleClipSelect}
+                selectedClipId={selectedClip?.id ?? null}
+              />
             </div>
           </ResizablePanel>
 

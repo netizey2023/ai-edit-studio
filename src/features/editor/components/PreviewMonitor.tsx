@@ -1,10 +1,10 @@
 import { useState } from 'react';
-import { 
-  Play, 
-  Pause, 
-  SkipBack, 
-  SkipForward, 
-  ChevronLeft, 
+import {
+  Play,
+  Pause,
+  SkipBack,
+  SkipForward,
+  ChevronLeft,
   ChevronRight,
   Maximize2,
   Volume2,
@@ -28,12 +28,12 @@ interface PreviewMonitorProps {
   onSeek: (time: number) => void;
 }
 
-export function PreviewMonitor({ 
-  currentTime, 
-  duration, 
-  isPlaying, 
-  onPlayPause, 
-  onSeek 
+export function PreviewMonitor({
+  currentTime,
+  duration,
+  isPlaying,
+  onPlayPause,
+  onSeek
 }: PreviewMonitorProps) {
   const [quality, setQuality] = useState('full');
   const [volume, setVolume] = useState(80);
@@ -41,7 +41,7 @@ export function PreviewMonitor({
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = Math.floor(seconds % 60);
-    const frames = Math.floor((seconds % 1) * 30);
+    const frames = Math.floor((seconds % 1) * 60);
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}:${frames.toString().padStart(2, '0')}`;
   };
 
@@ -90,7 +90,7 @@ export function PreviewMonitor({
           {/* Safe Zone Guides */}
           <div className="absolute inset-[5%] border border-dashed border-primary/30 pointer-events-none" />
           <div className="absolute inset-[10%] border border-dashed border-primary/20 pointer-events-none" />
-          
+
           {/* Center Crosshair */}
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-8 h-8">
             <div className="absolute top-1/2 left-0 right-0 h-px bg-primary/40" />
@@ -121,18 +121,18 @@ export function PreviewMonitor({
           <Button size="sm" variant="ghost" className="h-8 w-8 p-0" onClick={() => onSeek(0)}>
             <SkipBack className="w-4 h-4" />
           </Button>
-          <Button size="sm" variant="ghost" className="h-8 w-8 p-0" onClick={() => onSeek(Math.max(0, currentTime - 1/30))}>
+          <Button size="sm" variant="ghost" className="h-8 w-8 p-0" onClick={() => onSeek(Math.max(0, currentTime - 1 / 60))}>
             <ChevronLeft className="w-4 h-4" />
           </Button>
-          <Button 
-            size="sm" 
-            variant="ghost" 
+          <Button
+            size="sm"
+            variant="ghost"
             className="h-10 w-10 p-0 hover:bg-primary/20"
             onClick={onPlayPause}
           >
             {isPlaying ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5 ml-0.5" />}
           </Button>
-          <Button size="sm" variant="ghost" className="h-8 w-8 p-0" onClick={() => onSeek(Math.min(duration, currentTime + 1/30))}>
+          <Button size="sm" variant="ghost" className="h-8 w-8 p-0" onClick={() => onSeek(Math.min(duration, currentTime + 1 / 60))}>
             <ChevronRight className="w-4 h-4" />
           </Button>
           <Button size="sm" variant="ghost" className="h-8 w-8 p-0" onClick={() => onSeek(duration)}>

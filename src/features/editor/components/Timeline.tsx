@@ -1,351 +1,248 @@
-import { useState, useRef, useEffect } from 'react';
-import { 
-  Volume2, 
-  VolumeX, 
-  Headphones, 
-  Lock, 
-  Eye, 
-  EyeOff,
-  Film,
-  Music,
-  Sparkles,
-  ZoomIn,
-  ZoomOut,
-  ChevronLeft,
-  ChevronRight
-} from 'lucide-react';
-import { Button } from '@/shared/ui/button';
-import { Slider } from '@/shared/ui/slider';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from '@/shared/ui/tooltip';
-
-interface Clip {
-  id: string;
-  name: string;
-  type: 'video' | 'audio' | 'ai';
-  start: number;
-  duration: number;
-  trackId: string;
-}
-
-interface Track {
-  id: string;
-  name: string;
-  type: 'video' | 'audio';
-  muted: boolean;
-  solo: boolean;
-  locked: boolean;
-  visible: boolean;
-}
+import React, { useState, useRef, useEffect } from 'react';
+import { Track, Clip } from '../types';
+import { TimelineRuler } from './timeline/TimelineRuler';
+import { TimelineTrack } from './timeline/TimelineTrack';
+import { TimelineTrackHeader } from './timeline/TimelineTrackHeader';
+import { Playhead } from './timeline/Playhead';
+import { TimelineToolbar } from './TimelineToolbar';
 
 interface TimelineProps {
   currentTime: number;
   duration: number;
   onSeek: (time: number) => void;
-  onClipSelect: (clip: { id: string; name: string; type: 'video' | 'audio' | 'ai' } | null) => void;
+  onClipSelect: (clip: Clip | null) => void;
   selectedClipId: string | null;
 }
 
 const initialTracks: Track[] = [
-  { id: 'v3', name: 'V3', type: 'video', muted: false, solo: false, locked: false, visible: true },
-  { id: 'v2', name: 'V2', type: 'video', muted: false, solo: false, locked: false, visible: true },
-  { id: 'v1', name: 'V1', type: 'video', muted: false, solo: false, locked: false, visible: true },
-  { id: 'a1', name: 'A1', type: 'audio', muted: false, solo: false, locked: false, visible: true },
-  { id: 'a2', name: 'A2', type: 'audio', muted: false, solo: false, locked: false, visible: true },
+  { id: 'v2', name: 'Main Track', type: 'video', muted: false, solo: false, locked: false, visible: true },
+  { id: 'v1', name: 'Overlay 1', type: 'video', muted: false, solo: false, locked: false, visible: true },
+  { id: 'a1', name: 'Audio 1', type: 'audio', muted: false, solo: false, locked: false, visible: true },
+  { id: 'a2', name: 'Audio 2', type: 'audio', muted: false, solo: false, locked: false, visible: true },
 ];
 
 const initialClips: Clip[] = [
-  { id: 'clip1', name: 'intro_sequence.mp4', type: 'video', start: 0, duration: 3, trackId: 'v1' },
-  { id: 'clip2', name: 'main_footage.mp4', type: 'video', start: 3.5, duration: 8, trackId: 'v1' },
-  { id: 'clip3', name: 'AI Generated Take', type: 'ai', start: 2, duration: 4, trackId: 'v2' },
-  { id: 'clip4', name: 'b-roll_city.mp4', type: 'video', start: 12, duration: 5, trackId: 'v1' },
-  { id: 'clip5', name: 'overlay_text.mp4', type: 'video', start: 5, duration: 3, trackId: 'v3' },
+  { id: 'clip1', name: 'intro_sequence.mp4', type: 'video', start: 0, duration: 5, trackId: 'v2' },
+  { id: 'clip2', name: 'main_footage.mp4', type: 'video', start: 5, duration: 8, trackId: 'v2' },
+  { id: 'clip3', name: 'AI Generated Take', type: 'ai', start: 2, duration: 4, trackId: 'v1' },
   { id: 'clip6', name: 'background_music.mp3', type: 'audio', start: 0, duration: 18, trackId: 'a1' },
-  { id: 'clip7', name: 'voiceover.wav', type: 'audio', start: 2, duration: 10, trackId: 'a2' },
 ];
 
 export function Timeline({ currentTime, duration, onSeek, onClipSelect, selectedClipId }: TimelineProps) {
-  const [tracks, setTracks] = useState(initialTracks);
-  const [clips] = useState(initialClips);
-  const [zoom, setZoom] = useState(50);
+  const [tracks, setTracks] = useState<Track[]>(initialTracks);
+  const [clips] = useState<Clip[]>(initialClips);
+  const [zoom, setZoom] = useState(50); // pixels per second
   const [scrollPosition, setScrollPosition] = useState(0);
-  const timelineRef = useRef<HTMLDivElement>(null);
+  const [magnetEnabled, setMagnetEnabled] = useState(true);
+  const [snappingEnabled, setSnappingEnabled] = useState(true);
 
-  const pixelsPerSecond = zoom * 2;
-  const totalWidth = duration * pixelsPerSecond;
+  // Refs for Scroll Synchronization
+  const tracksHeaderRef = useRef<HTMLDivElement>(null);
+  const tracksContentRef = useRef<HTMLDivElement>(null);
+  const rulerRef = useRef<HTMLDivElement>(null);
 
-  const toggleTrackProperty = (trackId: string, property: 'muted' | 'solo' | 'locked' | 'visible') => {
-    setTracks(tracks.map(track => 
+  const toggleTrackProperty = (trackId: string, property: keyof Track) => {
+    setTracks(tracks.map(track =>
       track.id === trackId ? { ...track, [property]: !track[property] } : track
     ));
   };
 
+  const calculateTotalWidth = () => {
+    // Determine content end time
+    const maxClipEnd = Math.max(...clips.map(c => c.start + c.duration), 0);
+    const contentWidth = maxClipEnd * zoom;
+
+    // Determine viewport width (fallback to 0)
+    const viewportWidth = tracksContentRef.current?.clientWidth || 0;
+
+    // Ruler should fill the screen OR the content, whichever is larger
+    // Add some buffer (e.g. 200px) only to content for editing ease
+    return Math.max(contentWidth + 200, viewportWidth);
+  }
+
+  // Handle Sync Scrolling (Video vs Header vertical sync)
+  const handleContentScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    // Sync horizontal scroll state for ruler/rendering
+    setScrollPosition(e.currentTarget.scrollLeft);
+
+    // Sync vertical scroll to header
+    if (tracksHeaderRef.current) {
+      tracksHeaderRef.current.scrollTop = e.currentTarget.scrollTop;
+    }
+
+    // Ruler stays horizontally synced by the scrollPosition state passed to it, or strictly sticky?
+    // Ruler is sticky in the layout, so it follows horizontal scroll naturally if inside the container?
+    // Actually, in this split layout, Ruler is in the right panel. It should scroll horizontally with clips.
+    // If we scroll the right panel horizontally, the ruler moves.
+    // If we scroll the right panel vertically, the ruler should STAY at top. 
+    // This is handled by CSS sticky.
+  };
+
+  const handleHeaderScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    // Allow scrolling header to scroll content vertically
+    if (tracksContentRef.current) {
+      tracksContentRef.current.scrollTop = e.currentTarget.scrollTop;
+    }
+  };
+
+  // Refs to access latest state inside event listeners without re-binding
+  const stateRef = useRef({ zoom, currentTime });
+  useEffect(() => {
+    stateRef.current = { zoom, currentTime };
+  }, [zoom, currentTime]);
+
+  // Zoom limits
+  const MIN_ZOOM = 5;
+  const MAX_ZOOM = 500;
+
+  const performZoom = (newZoom: number, centerTime: number) => {
+    const clampedZoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, newZoom));
+    setZoom(clampedZoom);
+
+    if (tracksContentRef.current) {
+      const viewportWidth = tracksContentRef.current.clientWidth;
+      const targetScrollLeft = (centerTime * clampedZoom) - (viewportWidth / 2);
+      tracksContentRef.current.scrollLeft = Math.max(0, targetScrollLeft);
+    }
+  };
+
+  const handleWheel = (e: React.WheelEvent<HTMLDivElement>) => {
+    if (e.ctrlKey || e.metaKey) {
+      e.preventDefault();
+      const delta = -e.deltaY;
+      const zoomFactor = delta > 0 ? 1.2 : 0.8;
+      performZoom(zoom * zoomFactor, currentTime);
+    }
+  };
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.ctrlKey || e.metaKey) {
+        const { zoom: currentZoom, currentTime: time } = stateRef.current;
+
+        if (e.key === '=' || e.key === '+') {
+          e.preventDefault();
+          performZoom(currentZoom * 1.2, time);
+        } else if (e.key === '-' || e.key === '_') {
+          e.preventDefault();
+          performZoom(currentZoom * 0.8, time);
+        } else if (e.key === '0') {
+          e.preventDefault();
+          performZoom(50, time);
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
+  // Project settings (move to store/context later)
+  const FPS = 60;
+
   const formatTimecode = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = Math.floor(seconds % 60);
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
+    const frames = Math.floor((seconds % 1) * FPS);
+    return `${mins}:${secs.toString().padStart(2, '0')}:${frames.toString().padStart(2, '0')}`;
   };
 
-  const handleTimelineClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!timelineRef.current) return;
-    const rect = timelineRef.current.getBoundingClientRect();
-    const x = e.clientX - rect.left + scrollPosition;
-    const time = x / pixelsPerSecond;
-    onSeek(Math.max(0, Math.min(duration, time)));
-  };
-
-  const getClipClass = (type: Clip['type']) => {
-    switch (type) {
-      case 'video': return 'clip-video';
-      case 'audio': return 'clip-audio';
-      case 'ai': return 'clip-ai';
-    }
-  };
-
-  // Generate waveform bars for audio clips
-  const renderWaveform = () => {
-    const bars = [];
-    for (let i = 0; i < 60; i++) {
-      const height = 20 + Math.random() * 60;
-      bars.push(
-        <div 
-          key={i} 
-          className="w-0.5 bg-clip-audio/60 rounded-full mx-px" 
-          style={{ height: `${height}%` }}
-        />
-      );
-    }
-    return bars;
-  };
+  // Group clips by track ID outside of render loop to stabilize references
+  const clipsByTrack = React.useMemo(() => {
+    const groups: Record<string, Clip[]> = {};
+    tracks.forEach(t => groups[t.id] = []);
+    clips.forEach(c => {
+      if (groups[c.trackId]) {
+        groups[c.trackId].push(c);
+      }
+    });
+    return groups;
+  }, [clips, tracks]);
 
   return (
-    <div className="flex flex-col h-full bg-timeline-bg border-t border-editor-border">
-      {/* Timeline Header / Toolbar */}
-      <div className="h-8 px-2 flex items-center gap-2 border-b border-editor-border bg-editor-panel">
-        <span className="text-xs text-muted-foreground">Timeline</span>
-        <div className="flex-1" />
-        
-        {/* Zoom Controls */}
-        <div className="flex items-center gap-2">
-          <Button size="sm" variant="ghost" className="h-6 w-6 p-0" onClick={() => setZoom(Math.max(10, zoom - 10))}>
-            <ZoomOut className="w-3.5 h-3.5" />
-          </Button>
-          <Slider
-            value={[zoom]}
-            onValueChange={([v]) => setZoom(v)}
-            min={10}
-            max={100}
-            step={5}
-            className="w-24"
-          />
-          <Button size="sm" variant="ghost" className="h-6 w-6 p-0" onClick={() => setZoom(Math.min(100, zoom + 10))}>
-            <ZoomIn className="w-3.5 h-3.5" />
-          </Button>
-        </div>
-      </div>
+    <div className="flex flex-col h-full bg-[#18181b] border-t border-[#27272a]">
+      {/* Integrated Toolbar */}
+      <TimelineToolbar
+        currentTime={currentTime}
+        formatTimecode={formatTimecode}
+        zoom={zoom}
+        onZoomChange={setZoom}
+        magnetEnabled={magnetEnabled}
+        onToggleMagnet={() => setMagnetEnabled(!magnetEnabled)}
+        snappingEnabled={snappingEnabled}
+        onToggleSnapping={() => setSnappingEnabled(!snappingEnabled)}
+      />
 
-      <div className="flex flex-1 overflow-hidden">
-        {/* Track Headers */}
-        <div className="w-28 flex-shrink-0 border-r border-editor-border bg-editor-panel">
-          {/* Ruler header spacer */}
-          <div className="h-6 border-b border-editor-border" />
-          
-          {tracks.map((track) => (
-            <div 
-              key={track.id} 
-              className="timeline-track px-2 gap-1"
-              style={{ height: track.type === 'audio' ? '48px' : '64px' }}
-            >
-              <div className="flex items-center gap-1 flex-1">
-                {track.type === 'video' ? (
-                  <Film className="w-3 h-3 text-clip-video" />
-                ) : (
-                  <Music className="w-3 h-3 text-clip-audio" />
-                )}
-                <span className="text-xs font-medium">{track.name}</span>
-              </div>
-              
-              <div className="flex items-center gap-0.5">
-                <Tooltip delayDuration={200}>
-                  <TooltipTrigger asChild>
-                    <button 
-                      className={`p-1 rounded hover:bg-secondary ${track.muted ? 'text-destructive' : 'text-muted-foreground'}`}
-                      onClick={() => toggleTrackProperty(track.id, 'muted')}
-                    >
-                      {track.muted ? <VolumeX className="w-3 h-3" /> : <Volume2 className="w-3 h-3" />}
-                    </button>
-                  </TooltipTrigger>
-                  <TooltipContent>Mute</TooltipContent>
-                </Tooltip>
-                
-                <Tooltip delayDuration={200}>
-                  <TooltipTrigger asChild>
-                    <button 
-                      className={`p-1 rounded hover:bg-secondary ${track.solo ? 'text-primary' : 'text-muted-foreground'}`}
-                      onClick={() => toggleTrackProperty(track.id, 'solo')}
-                    >
-                      <Headphones className="w-3 h-3" />
-                    </button>
-                  </TooltipTrigger>
-                  <TooltipContent>Solo</TooltipContent>
-                </Tooltip>
-                
-                <Tooltip delayDuration={200}>
-                  <TooltipTrigger asChild>
-                    <button 
-                      className={`p-1 rounded hover:bg-secondary ${track.locked ? 'text-yellow-500' : 'text-muted-foreground'}`}
-                      onClick={() => toggleTrackProperty(track.id, 'locked')}
-                    >
-                      <Lock className="w-3 h-3" />
-                    </button>
-                  </TooltipTrigger>
-                  <TooltipContent>Lock</TooltipContent>
-                </Tooltip>
+      <div className="flex flex-1 overflow-hidden relative">
 
-                {track.type === 'video' && (
-                  <Tooltip delayDuration={200}>
-                    <TooltipTrigger asChild>
-                      <button 
-                        className={`p-1 rounded hover:bg-secondary ${!track.visible ? 'text-muted-foreground/50' : 'text-muted-foreground'}`}
-                        onClick={() => toggleTrackProperty(track.id, 'visible')}
-                      >
-                        {track.visible ? <Eye className="w-3 h-3" /> : <EyeOff className="w-3 h-3" />}
-                      </button>
-                    </TooltipTrigger>
-                    <TooltipContent>Visibility</TooltipContent>
-                  </Tooltip>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
+        {/* Left Panel: Track Headers (Fixed Width) */}
+        <div
+          ref={tracksHeaderRef}
+          onScroll={handleHeaderScroll}
+          className="w-64 flex-shrink-0 bg-[#18181b] border-r border-[#27272a] overflow-hidden sticky left-0 z-50 flex flex-col pt-8" // pt-8 to align with ruler height roughly? No, Header has no ruler.
+        >
+          {/* Spacer for Ruler Height (Ruler is ~32px) */}
+          <div className="h-8 w-full bg-[#18181b] border-b border-[#27272a] flex-shrink-0" />
 
-        {/* Timeline Content */}
-        <div className="flex-1 overflow-x-auto scrollbar-thin" onScroll={(e) => setScrollPosition(e.currentTarget.scrollLeft)}>
-          <div style={{ width: `${totalWidth}px`, minWidth: '100%' }}>
-            {/* Time Ruler */}
-            <div 
-              className="h-6 bg-timeline-ruler border-b border-editor-border relative cursor-pointer"
-              onClick={handleTimelineClick}
-              ref={timelineRef}
-            >
-              {Array.from({ length: Math.ceil(duration) + 1 }).map((_, i) => (
-                <div
-                  key={i}
-                  className="absolute top-0 bottom-0 flex flex-col justify-end"
-                  style={{ left: `${i * pixelsPerSecond}px` }}
-                >
-                  <div className="h-2 w-px bg-muted-foreground/50" />
-                  <span className="text-[10px] text-muted-foreground ml-1">{formatTimecode(i)}</span>
-                </div>
-              ))}
-              
-              {/* Playhead */}
-              <div 
-                className="absolute top-0 bottom-0 w-0.5 bg-playhead z-10 animate-playhead-pulse"
-                style={{ left: `${currentTime * pixelsPerSecond}px` }}
-              >
-                <div className="absolute -top-0 left-1/2 -translate-x-1/2 w-3 h-3 bg-playhead" 
-                     style={{ clipPath: 'polygon(0 0, 100% 0, 50% 100%)' }} />
-              </div>
-            </div>
-
-            {/* Tracks */}
+          {/* Track Headers List */}
+          <div className="flex-1 pb-4">
             {tracks.map((track) => (
-              <div 
-                key={track.id} 
-                className="timeline-track relative"
-                style={{ height: track.type === 'audio' ? '48px' : '64px' }}
-              >
-                {clips
-                  .filter(clip => clip.trackId === track.id)
-                  .map(clip => (
-                    <div
-                      key={clip.id}
-                      className={`clip ${getClipClass(clip.type)} ${selectedClipId === clip.id ? 'clip-selected' : ''} absolute top-2`}
-                      style={{
-                        left: `${clip.start * pixelsPerSecond}px`,
-                        width: `${clip.duration * pixelsPerSecond}px`,
-                        height: track.type === 'audio' ? '32px' : '48px',
-                      }}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onClipSelect({ id: clip.id, name: clip.name, type: clip.type });
-                      }}
-                    >
-                      <div className="h-full px-2 py-1 flex flex-col justify-between overflow-hidden">
-                        <div className="flex items-center gap-1">
-                          {clip.type === 'ai' && <Sparkles className="w-3 h-3 flex-shrink-0" />}
-                          <span className="text-[10px] font-medium truncate">{clip.name}</span>
-                        </div>
-                        
-                        {/* Waveform for audio */}
-                        {track.type === 'audio' && (
-                          <div className="flex items-center h-4 overflow-hidden">
-                            {renderWaveform()}
-                          </div>
-                        )}
-                        
-                        {/* Thumbnail placeholders for video */}
-                        {track.type === 'video' && (
-                          <div className="flex gap-px h-6 mt-1">
-                            {Array.from({ length: Math.max(3, Math.floor(clip.duration * pixelsPerSecond / 40)) }).map((_, i) => (
-                              <div key={i} className="flex-1 bg-black/30 rounded-sm" />
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                
-                {/* Playhead line through tracks */}
-                <div 
-                  className="absolute top-0 bottom-0 w-0.5 bg-playhead/50 pointer-events-none z-10"
-                  style={{ left: `${currentTime * pixelsPerSecond}px` }}
-                />
-              </div>
+              <TimelineTrackHeader
+                key={track.id}
+                track={track}
+                height={track.type === 'audio' ? 48 : 64}
+                onToggleTrackProperty={toggleTrackProperty}
+                isMain={track.id === 'v2'}
+              />
             ))}
           </div>
         </div>
-      </div>
 
-      {/* Mini-map */}
-      <div className="h-6 px-2 flex items-center gap-2 border-t border-editor-border bg-editor-panel">
-        <div className="flex-1 h-3 bg-secondary rounded-full overflow-hidden relative">
-          {/* Mini clip indicators */}
-          {clips.map(clip => (
-            <div
-              key={clip.id}
-              className={`absolute top-0 bottom-0 ${clip.type === 'video' ? 'bg-clip-video/60' : clip.type === 'audio' ? 'bg-clip-audio/60' : 'bg-clip-ai/60'}`}
-              style={{
-                left: `${(clip.start / duration) * 100}%`,
-                width: `${(clip.duration / duration) * 100}%`,
-              }}
+        {/* Right Panel: Content (Scrollable) */}
+        <div
+          ref={tracksContentRef}
+          className="flex-1 overflow-auto scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-transparent bg-[#0f0f10]"
+          onScroll={handleContentScroll}
+          onWheel={handleWheel}
+        >
+          <div className="relative min-w-full h-full" style={{ width: `${calculateTotalWidth()}px` }}>
+
+            {/* Sticky Ruler */}
+            <div className="sticky top-0 z-40 bg-[#18181b] w-full">
+              <TimelineRuler
+                totalWidth={calculateTotalWidth()}
+                maxSeekDuration={Math.max(...clips.map(c => c.start + c.duration), 10)} // Default to 10s if empty
+                zoom={zoom}
+                onSeek={onSeek}
+                offsetX={scrollPosition}
+                fps={FPS}
+              />
+            </div>
+
+            {/* Playhead (Absolute over the whole area) */}
+            <Playhead
+              currentTime={currentTime}
+              zoom={zoom}
+              height="100%" // Dynamic height
+            // Note: Playhead is absolutely positioned.
             />
-          ))}
-          
-          {/* Viewport indicator */}
-          <div 
-            className="absolute top-0 bottom-0 border border-foreground/50 bg-foreground/10 rounded"
-            style={{
-              left: `${(scrollPosition / totalWidth) * 100}%`,
-              width: '30%',
-            }}
-          />
-          
-          {/* Playhead indicator */}
-          <div 
-            className="absolute top-0 bottom-0 w-0.5 bg-playhead"
-            style={{ left: `${(currentTime / duration) * 100}%` }}
-          />
+
+            {/* Tracks Lanes */}
+            <div className="pb-4">
+              {tracks.map((track) => (
+                <TimelineTrack
+                  key={track.id}
+                  track={track}
+                  clips={clipsByTrack[track.id] || []}
+                  zoom={zoom}
+                  height={track.type === 'audio' ? 48 : 64}
+                  selectedClipId={selectedClipId}
+                  onClipSelect={onClipSelect}
+                />
+              ))}
+            </div>
+          </div>
         </div>
-        
-        <span className="text-[10px] text-muted-foreground tabular-nums">
-          {formatTimecode(currentTime)} / {formatTimecode(duration)}
-        </span>
       </div>
     </div>
   );
