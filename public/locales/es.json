@@ -1,0 +1,86 @@
+{
+    "project": {
+        "settings": {
+            "title": "Configuración del proyecto",
+            "details": "Detalles",
+            "performance": "Rendimiento",
+            "name": "Nombre",
+            "saveTo": "Guardar en",
+            "importedMedia": "Medios importados",
+            "copyMedia": "Copiar medios al proyecto",
+            "keepMedia": "Mantener en la ubicación original",
+            "aspectRatio": "Relación de aspecto",
+            "resolution": "Resolución",
+            "frameRate": "Velocidad de fotogramas",
+            "colorSpace": "Espacio de color",
+            "organizeLayers": "Organizar capas",
+            "cannotDisable": "*No se puede desactivar después de la activación.",
+            "save": "Guardar",
+            "cancel": "Cancelar"
+        }
+    },
+    "export": {
+        "title": "Exportar",
+        "editCover": "Editar portada",
+        "preview": "Vista previa",
+        "name": "Nombre",
+        "exportTo": "Exportar a",
+        "video": "Video",
+        "resolution": "Resolución",
+        "bitrate": "Tasa de bits",
+        "codec": "Códec",
+        "format": "Formato",
+        "frameRate": "Velocidad de fotogramas",
+        "sync": "Sincronizar videos exportados con el espacio",
+        "audio": "Audio",
+        "gif": "Exportar GIF",
+        "duration": "Duración",
+        "size": "Tamaño",
+        "cancel": "Cancelar",
+        "export": "Exportar",
+        "exportUhd": "Exportar en UHD"
+    },
+    "player": {
+        "title": "Reproductor",
+        "fill": "Rellenar",
+        "ratio": "Proporción",
+        "focus": "Modo Enfoque",
+        "fullscreen": "Pantalla completa",
+        "original": "Original",
+        "custom": "Personalizado",
+        "inches": "pulgadas"
+    },
+    "inspector": {
+        "tabs": {
+            "video": "Video",
+            "audio": "Audio",
+            "animation": "Animación",
+            "speed": "Velocidad",
+            "adjust": "Ajuste"
+        },
+        "subTabs": {
+            "basic": "Básico",
+            "cutout": "Recorte",
+            "mask": "Máscara",
+            "enhance": "Mejorar"
+        },
+        "transform": {
+            "title": "Transformar",
+            "scale": "Escala",
+            "rotation": "Rotación",
+            "position": "Posición"
+        },
+        "blend": {
+            "title": "Mezcla",
+            "opacity": "Opacidad",
+            "mode": "Modo"
+        },
+        "stabilize": {
+            "title": "Estabilizar"
+        },
+        "projectDetails": {
+            "name": "Nombre"
+        },
+        "export": "Exportar"
+    }
+}

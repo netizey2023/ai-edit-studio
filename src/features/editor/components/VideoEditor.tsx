@@ -108,7 +108,7 @@ export function VideoEditor() {
               <ResizableHandle className="w-2 bg-transparent" />
 
               {/* Right Panel (Inspector) */}
-              <ResizablePanel defaultSize={25} minSize={20}>
+              <ResizablePanel defaultSize={25} minSize={25}>
                 <div className="h-full w-full bg-editor-panel rounded-xl border border-zinc-800 overflow-hidden flex flex-col relative">
                   <InspectorPanel selectedClip={selectedClip} onExport={() => setIsExportModalOpen(true)} />
                 </div>
@@ -136,7 +136,7 @@ export function VideoEditor() {
 
         </ResizablePanelGroup>
       </div>
-      {/* <ExportModal open={isExportModalOpen} onOpenChange={setIsExportModalOpen} /> */}
+      <ExportModal open={isExportModalOpen} onOpenChange={setIsExportModalOpen} />
     </div>
   );
 }

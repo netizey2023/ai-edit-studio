@@ -1,0 +1,86 @@
+{
+    "project": {
+        "settings": {
+            "title": "Configurações do projeto",
+            "details": "Detalhes",
+            "performance": "Desempenho",
+            "name": "Nome",
+            "saveTo": "Salvar em",
+            "importedMedia": "Mídia importada",
+            "copyMedia": "Copiar mídia para o projeto",
+            "keepMedia": "Manter no local original",
+            "aspectRatio": "Proporção de aspecto",
+            "resolution": "Resolução",
+            "frameRate": "Taxa de quadros",
+            "colorSpace": "Espaço de cores",
+            "organizeLayers": "Organizar camadas",
+            "cannotDisable": "*Não é possível desativar após a ativação.",
+            "save": "Salvar",
+            "cancel": "Cancelar"
+        }
+    },
+    "export": {
+        "title": "Exportar",
+        "editCover": "Editar capa",
+        "preview": "Preview",
+        "name": "Nome",
+        "exportTo": "Exportar para",
+        "video": "Vídeo",
+        "resolution": "Resolução",
+        "bitrate": "Taxa de bits",
+        "codec": "Codec",
+        "format": "Formato",
+        "frameRate": "Taxa de quadros",
+        "sync": "Sincronize os vídeos exportados com o espaço",
+        "audio": "Áudio",
+        "gif": "Exportar GIF",
+        "duration": "Duração",
+        "size": "Tamanho",
+        "cancel": "Cancelar",
+        "export": "Exportar",
+        "exportUhd": "Exportar em UHD"
+    },
+    "player": {
+        "title": "Reprodutor",
+        "fill": "Preenchimento",
+        "ratio": "Proporção",
+        "focus": "Modo Foco",
+        "fullscreen": "Tela Cheia",
+        "original": "Original",
+        "custom": "Personalizado",
+        "inches": "polegadas"
+    },
+    "inspector": {
+        "tabs": {
+            "video": "Vídeo",
+            "audio": "Áudio",
+            "animation": "Animação",
+            "speed": "Velocidade",
+            "adjust": "Ajuste"
+        },
+        "subTabs": {
+            "basic": "Básico",
+            "cutout": "Recorte",
+            "mask": "Máscara",
+            "enhance": "Melhorar"
+        },
+        "transform": {
+            "title": "Transformar",
+            "scale": "Escala",
+            "rotation": "Rotação",
+            "position": "Posição"
+        },
+        "blend": {
+            "title": "Mistura",
+            "opacity": "Opacidade",
+            "mode": "Modo"
+        },
+        "stabilize": {
+            "title": "Estabilizar"
+        },
+        "projectDetails": {
+            "name": "Nome"
+        },
+        "export": "Exportar"
+    }
+}

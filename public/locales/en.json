@@ -1,0 +1,86 @@
+{
+    "project": {
+        "settings": {
+            "title": "Project Settings",
+            "details": "Details",
+            "performance": "Performance",
+            "name": "Name",
+            "saveTo": "Save to",
+            "importedMedia": "Imported Media",
+            "copyMedia": "Copy media to project",
+            "keepMedia": "Keep in original location",
+            "aspectRatio": "Aspect Ratio",
+            "resolution": "Resolution",
+            "frameRate": "Frame rate",
+            "colorSpace": "Color Space",
+            "organizeLayers": "Organize layers",
+            "cannotDisable": "*Cannot be disabled after activation.",
+            "save": "Save",
+            "cancel": "Cancel"
+        }
+    },
+    "export": {
+        "title": "Export",
+        "editCover": "Edit cover",
+        "preview": "Preview",
+        "name": "Name",
+        "exportTo": "Export to",
+        "video": "Video",
+        "resolution": "Resolution",
+        "bitrate": "Bitrate",
+        "codec": "Codec",
+        "format": "Format",
+        "frameRate": "Frame rate",
+        "sync": "Sync exported videos with space",
+        "audio": "Audio",
+        "gif": "Export GIF",
+        "duration": "Duration",
+        "size": "Size",
+        "cancel": "Cancel",
+        "export": "Export",
+        "exportUhd": "Export in UHD"
+    },
+    "player": {
+        "title": "Player",
+        "fill": "Fill",
+        "ratio": "Ratio",
+        "focus": "Focus Mode",
+        "fullscreen": "Fullscreen",
+        "original": "Original",
+        "custom": "Custom",
+        "inches": "inches"
+    },
+    "inspector": {
+        "tabs": {
+            "video": "Video",
+            "audio": "Audio",
+            "animation": "Animation",
+            "speed": "Speed",
+            "adjust": "Adjust"
+        },
+        "subTabs": {
+            "basic": "Basic",
+            "cutout": "Cutout",
+            "mask": "Mask",
+            "enhance": "Enhance"
+        },
+        "transform": {
+            "title": "Transform",
+            "scale": "Scale",
+            "rotation": "Rotation",
+            "position": "Position"
+        },
+        "blend": {
+            "title": "Blend",
+            "opacity": "Opacity",
+            "mode": "Mode"
+        },
+        "stabilize": {
+            "title": "Stabilize"
+        },
+        "projectDetails": {
+            "name": "Name"
+        },
+        "export": "Export"
+    }
+}

@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useRef, useEffect, useState } from "react"
+import { useTranslation } from "react-i18next";
 import {
   Play,
   Pause,
@@ -37,6 +38,8 @@ export function PreviewMonitor({
   onPlayPause,
   onSeek
 }: PreviewMonitorProps) {
+  const containerRef = useRef<HTMLDivElement>(null)
+  const { t } = useTranslation();
   // Format as HH:MM:SS:FF
   const formatTimeFull = (seconds: number) => {
     const hours = Math.floor(seconds / 3600);
@@ -55,7 +58,7 @@ export function PreviewMonitor({
     <div className="flex flex-col h-full bg-editor-panel min-h-0 select-none">
       {/* Header */}
       <div className="h-10 px-4 flex items-center justify-between bg-editor-panel border-b border-editor-border">
-        <span className="text-sm font-medium text-gray-200">Reprodutor</span>
+        <span className="text-sm font-medium text-gray-200">{t('player.title')}</span>
 
         {/* Menu Icon with Dot */}
         <div className="relative">
@@ -87,21 +90,21 @@ export function PreviewMonitor({
       </div>
 
       {/* Footer / Transport Controls */}
-      <div className="h-12 px-4 border-t border-editor-border bg-editor-panel flex items-center justify-between">
+      <div className="h-12 px-2 border-t border-editor-border bg-editor-panel grid grid-cols-[1fr_auto_1fr] items-center gap-2">
 
         {/* Left: Timecodes */}
-        <div className="flex items-center gap-2 font-mono text-xs">
-          <span className="text-cyan-400">{formatTimeFull(currentTime)}</span>
+        <div className="flex items-center gap-2 font-mono text-xs justify-self-start pl-2 min-w-0">
+          <span className="text-cyan-400 whitespace-nowrap">{formatTimeFull(currentTime)}</span>
           <span className="text-gray-500">/</span>
-          <span className="text-gray-200">{formatTimeFull(duration)}</span>
+          <span className="text-gray-200 whitespace-nowrap">{formatTimeFull(duration)}</span>
         </div>
 
         {/* Center: Play Control */}
-        <div className="absolute left-1/2 -translate-x-1/2">
+        <div className="justify-self-center">
           <Button
             variant="ghost"
             size="icon"
-            className="h-8 w-8 text-gray-200 hover:text-white hover:bg-white/10"
+            className="h-8 w-8 text-gray-200 hover:text-white hover:bg-white/10 shrink-0"
             onClick={onPlayPause}
           >
             {isPlaying ? <Pause className="fill-current" size={18} /> : <Play className="fill-current" size={18} />}
@@ -109,26 +112,26 @@ export function PreviewMonitor({
         </div>
 
         {/* Right: Tools */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-1 justify-self-end pr-2">
           {/* Fill Button */}
-          <div className="bg-secondary rounded px-2 py-0.5 border border-white/10 cursor-pointer hover:bg-secondary/80 transition-colors">
-            <span className="text-[10px] text-gray-300">Preenchimento</span>
-          </div>
+          <Button variant="ghost" size="icon" className="h-7 w-7 text-gray-400 hover:text-white" title={t('player.fill')}>
+            <Scan size={14} />
+          </Button>
 
-          {/* Ratio Button */}
+          {/* Ratio Dropdown */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <div className="bg-secondary rounded px-2 py-0.5 border border-white/10 cursor-pointer hover:bg-secondary/80 transition-colors">
-                <span className="text-[10px] text-gray-300">Proporção</span>
-              </div>
+              <Button variant="ghost" size="icon" className="h-7 w-7 text-gray-400 hover:text-white" title={t('player.ratio')}>
+                <RectangleHorizontal size={14} />
+              </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-48 bg-editor-panel border-editor-border text-gray-200">
               <DropdownMenuCheckboxItem checked={aspectRatio === "Original"} onCheckedChange={() => setAspectRatio("Original")}>
-                <span>Original</span>
+                <span>{t('player.original')}</span>
                 <Monitor className="ml-auto h-4 w-4 text-muted-foreground" />
               </DropdownMenuCheckboxItem>
               <DropdownMenuCheckboxItem checked={aspectRatio === "Personalizado"} onCheckedChange={() => setAspectRatio("Personalizado")}>
-                <span>Personalizado</span>
+                <span>{t('player.custom')}</span>
                 <Settings2 className="ml-auto h-4 w-4 text-muted-foreground" />
               </DropdownMenuCheckboxItem>
 
@@ -166,7 +169,7 @@ export function PreviewMonitor({
                 <RectangleVertical className="ml-auto h-4 w-4 text-muted-foreground" />
               </DropdownMenuCheckboxItem>
               <DropdownMenuCheckboxItem checked={aspectRatio === "5.8\""} onCheckedChange={() => setAspectRatio("5.8\"")}>
-                <span>5.8 polegadas</span>
+                <span>5.8 {t('player.inches')}</span>
                 <RectangleVertical className="ml-auto h-4 w-4 text-muted-foreground" />
               </DropdownMenuCheckboxItem>
               <DropdownMenuCheckboxItem checked={aspectRatio === "1:1"} onCheckedChange={() => setAspectRatio("1:1")}>
@@ -177,11 +180,11 @@ export function PreviewMonitor({
           </DropdownMenu>
 
           <Button variant="ghost" size="icon" className="h-7 w-7 text-gray-400 hover:text-white" title="Focus Mode">
-            <Scan size={16} />
+            <Scan size={14} />
           </Button>
 
           <Button variant="ghost" size="icon" className="h-7 w-7 text-gray-400 hover:text-white" title="Fullscreen">
-            <Maximize2 size={16} />
+            <Maximize2 size={14} />
           </Button>
         </div>
       </div>
