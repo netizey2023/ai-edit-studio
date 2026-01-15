@@ -29,7 +29,7 @@ export function TopNavigation({ activeTab, onTabChange }: TopNavigationProps) {
     ];
 
     return (
-        <div className="h-14 border-b border-border bg-editor-bg flex items-center px-2 gap-1 overflow-x-auto scrollbar-thin">
+        <div className="h-16 border-b border-editor-border bg-editor-panel-header flex items-center px-2 gap-1 overflow-x-auto scrollbar-thin flex-shrink-0">
             {navItems.map((item) => {
                 const Icon = item.icon;
                 const isActive = activeTab === item.id;

@@ -11,7 +11,6 @@ import {
   List,
   Globe
 } from 'lucide-react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/ui/tabs';
 import { Input } from '@/shared/ui/input';
 import { Button } from '@/shared/ui/button';
 
@@ -44,10 +43,10 @@ const effects = [
 ];
 
 interface AssetPanelProps {
-  activeCategory: string;
+  activeCategory?: string;
 }
 
-export function AssetPanel({ activeCategory }: AssetPanelProps) {
+export function AssetPanel({ activeCategory = 'media' }: AssetPanelProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [webSearchQuery, setWebSearchQuery] = useState('');
@@ -60,40 +59,10 @@ export function AssetPanel({ activeCategory }: AssetPanelProps) {
     }
   };
 
-  return (
-    <div className="flex flex-col h-full bg-editor-panel border-r border-editor-border">
-      <Tabs value={activeCategory === 'media' ? 'project' : activeCategory} className="flex flex-col h-full">
-        <div className="editor-panel-header flex items-center justify-between">
-          <TabsList className="bg-transparent h-auto p-0 gap-4">
-            <TabsTrigger
-              value="project"
-              className="px-0 py-1 text-xs data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none"
-            >
-              Project
-            </TabsTrigger>
-            <TabsTrigger
-              value="transitions"
-              className="px-0 py-1 text-xs data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none"
-            >
-              Transitions
-            </TabsTrigger>
-            <TabsTrigger
-              value="effects"
-              className="px-0 py-1 text-xs data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none"
-            >
-              Effects
-            </TabsTrigger>
-            <TabsTrigger
-              value="ai-search"
-              className="px-0 py-1 text-xs data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none flex items-center gap-1"
-            >
-              <Sparkles className="w-3 h-3" />
-              AI Web Search
-            </TabsTrigger>
-          </TabsList>
-        </div>
-
-        <TabsContent value="project" className="flex-1 m-0 flex flex-col overflow-hidden">
+  const renderContent = () => {
+    if (activeCategory === 'media' || activeCategory === 'project' || !activeCategory) {
+      return (
+        <div className="flex-1 m-0 flex flex-col overflow-hidden h-full">
           <div className="p-2 border-b border-editor-border flex gap-2">
             <div className="relative flex-1">
               <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -114,7 +83,7 @@ export function AssetPanel({ activeCategory }: AssetPanelProps) {
 
           <div className="flex-1 overflow-y-auto scrollbar-thin p-2">
             {viewMode === 'grid' ? (
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-3 gap-2">
                 {mockAssets.map((asset) => {
                   const Icon = getAssetIcon(asset.type);
                   return (
@@ -153,9 +122,13 @@ export function AssetPanel({ activeCategory }: AssetPanelProps) {
               </div>
             )}
           </div>
-        </TabsContent>
+        </div>
+      );
+    }
 
-        <TabsContent value="transitions" className="flex-1 m-0 overflow-y-auto scrollbar-thin p-2">
+    if (activeCategory === 'transitions') {
+      return (
+        <div className="flex-1 m-0 overflow-y-auto scrollbar-thin p-2 h-full">
           <div className="grid grid-cols-2 gap-2">
             {transitions.map((transition) => (
               <div
@@ -167,9 +140,13 @@ export function AssetPanel({ activeCategory }: AssetPanelProps) {
               </div>
             ))}
           </div>
-        </TabsContent>
+        </div>
+      );
+    }
 
-        <TabsContent value="effects" className="flex-1 m-0 overflow-y-auto scrollbar-thin p-2">
+    if (activeCategory === 'effects') {
+      return (
+        <div className="flex-1 m-0 overflow-y-auto scrollbar-thin p-2 h-full">
           <div className="grid grid-cols-2 gap-2">
             {effects.map((effect) => (
               <div
@@ -181,9 +158,13 @@ export function AssetPanel({ activeCategory }: AssetPanelProps) {
               </div>
             ))}
           </div>
-        </TabsContent>
+        </div>
+      );
+    }
 
-        <TabsContent value="ai-search" className="flex-1 m-0 flex flex-col overflow-hidden">
+    if (activeCategory === 'ai-search') {
+      return (
+        <div className="flex-1 m-0 flex flex-col overflow-hidden h-full">
           <div className="p-3 border-b border-editor-border">
             <div className="relative">
               <Globe className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-primary" />
@@ -206,8 +187,22 @@ export function AssetPanel({ activeCategory }: AssetPanelProps) {
               <p className="text-xs text-muted-foreground/70 mt-1">Powered by AI multimodal search</p>
             </div>
           </div>
-        </TabsContent>
-      </Tabs>
+        </div>
+      );
+    }
+
+    return (
+      <div className="flex-1 flex items-center justify-center text-muted-foreground p-4">
+        <div className="text-center">
+          <p className="text-sm">Content for {activeCategory} coming soon</p>
+        </div>
+      </div>
+    );
+  };
+
+  return (
+    <div className="flex flex-col h-full bg-editor-panel min-h-0">
+      {renderContent()}
     </div>
   );
 }

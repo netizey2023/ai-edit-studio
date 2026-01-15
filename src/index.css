@@ -8,16 +8,19 @@
 
 @layer base {
   :root {
-    --background: 0 0% 7%; /* #121212 */
+    --background: 0 0% 7%;
+    /* #121212 */
     --foreground: 240 5% 96%;
 
-    --card: 0 0% 12%; /* #1e1e1e */
+    --card: 0 0% 12%;
+    /* #1e1e1e */
     --card-foreground: 240 5% 96%;
 
     --popover: 0 0% 12%;
     --popover-foreground: 240 5% 96%;
 
-    --primary: 182 75% 63%; /* #5ce1e6 */
+    --primary: 182 75% 63%;
+    /* #5ce1e6 */
     --primary-foreground: 240 6% 6%;
 
     --secondary: 0 0% 15%;
@@ -44,19 +47,19 @@
     --editor-panel-header: 0 0% 12%;
     --editor-border: 0 0% 20%;
     --editor-active: 182 75% 63%;
-    
+
     /* Clip Colors */
     --clip-video: 210 90% 50%;
     --clip-audio: 142 70% 45%;
     --clip-ai: 270 70% 55%;
     --clip-text: 45 90% 55%;
-    
+
     /* Timeline */
     --timeline-bg: 0 0% 9%;
     --timeline-track: 0 0% 12%;
     --timeline-ruler: 0 0% 15%;
     --playhead: 182 75% 63%;
-    
+
     /* Tool states */
     --tool-hover: 0 0% 20%;
     --tool-active: 182 75% 63%;
@@ -118,82 +121,107 @@
     background-color: hsl(var(--editor-panel));
     @apply border border-editor-border rounded-sm;
   }
-  
+
   .editor-panel-header {
     background-color: hsl(var(--editor-panel-header));
     @apply px-3 py-2 border-b border-editor-border text-xs font-medium text-muted-foreground uppercase tracking-wider;
   }
-  
+
   .tool-button {
-    @apply w-9 h-9 flex items-center justify-center rounded-md text-muted-foreground 
-           hover:bg-tool-hover hover:text-foreground transition-all duration-150
-           data-[active=true]:bg-editor-active data-[active=true]:text-primary-foreground;
+    @apply w-9 h-9 flex items-center justify-center rounded-md text-muted-foreground hover:bg-tool-hover hover:text-foreground transition-all duration-150 data-[active=true]:bg-editor-active data-[active=true]:text-primary-foreground;
   }
-  
+
   .menu-item {
-    @apply px-3 py-1.5 text-sm text-secondary-foreground hover:bg-secondary hover:text-foreground 
-           cursor-pointer transition-colors rounded-sm;
+    @apply px-3 py-1.5 text-sm text-secondary-foreground hover:bg-secondary hover:text-foreground cursor-pointer transition-colors rounded-sm;
   }
-  
+
   .timeline-track {
     @apply h-16 bg-timeline-track border-b border-editor-border flex items-center;
   }
-  
+
   .clip {
-    @apply h-12 rounded-sm cursor-pointer transition-all duration-150
-           hover:ring-2 hover:ring-white/30;
+    @apply h-12 rounded-sm cursor-pointer transition-all duration-150 hover:ring-2 hover:ring-white/30;
   }
-  
+
   .clip-video {
     @apply bg-clip-video/80 border border-clip-video;
   }
-  
+
   .clip-audio {
     @apply bg-clip-audio/80 border border-clip-audio;
   }
-  
+
   .clip-ai {
     @apply bg-clip-ai/80 border border-clip-ai;
   }
-  
+
   .clip-selected {
     @apply ring-2 ring-editor-active ring-offset-1 ring-offset-editor-bg;
   }
-  
+
   .feeling-preset {
-    @apply px-3 py-2 bg-secondary/50 border border-border rounded-md text-xs font-medium
-           hover:bg-secondary hover:border-muted-foreground/50 cursor-pointer transition-all
-           data-[active=true]:bg-editor-active/20 data-[active=true]:border-editor-active data-[active=true]:text-editor-active;
+    @apply px-3 py-2 bg-secondary/50 border border-border rounded-md text-xs font-medium hover:bg-secondary hover:border-muted-foreground/50 cursor-pointer transition-all data-[active=true]:bg-editor-active/20 data-[active=true]:border-editor-active data-[active=true]:text-editor-active;
   }
 
   .waveform {
-    background: repeating-linear-gradient(
-      90deg,
-      hsl(var(--clip-audio)) 0px,
-      hsl(var(--clip-audio)) 1px,
-      transparent 1px,
-      transparent 3px
-    );
+    background: repeating-linear-gradient(90deg,
+        hsl(var(--clip-audio)) 0px,
+        hsl(var(--clip-audio)) 1px,
+        transparent 1px,
+        transparent 3px);
   }
 }
 
 @layer utilities {
+
+  /* Class-based scrollbar */
   .scrollbar-thin {
     scrollbar-width: thin;
     scrollbar-color: hsl(var(--muted)) transparent;
   }
-  
+
   .scrollbar-thin::-webkit-scrollbar {
     width: 6px;
     height: 6px;
   }
-  
+
   .scrollbar-thin::-webkit-scrollbar-track {
     background: transparent;
   }
-  
+
   .scrollbar-thin::-webkit-scrollbar-thumb {
-    background: hsl(var(--muted));
-    border-radius: 3px;
+    @apply bg-zinc-700/50 rounded-full hover:bg-zinc-600;
   }
+}
+
+/* Global Scrollbar override to ensure NO green scrollbars anywhere */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-zinc-700/50 rounded-full hover:bg-zinc-600;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* Base styles to remove default margins/paddings that might cause white bars */
+html,
+body,
+#root {
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  background-color: hsl(var(--background));
+  margin: 0;
+  padding: 0;
 }

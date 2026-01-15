@@ -39,7 +39,6 @@ export function Timeline({ currentTime, duration, onSeek, onClipSelect, selected
   // Refs for Scroll Synchronization
   const tracksHeaderRef = useRef<HTMLDivElement>(null);
   const tracksContentRef = useRef<HTMLDivElement>(null);
-  const rulerRef = useRef<HTMLDivElement>(null);
 
   const toggleTrackProperty = (trackId: string, property: keyof Track) => {
     setTracks(tracks.map(track =>
@@ -69,13 +68,6 @@ export function Timeline({ currentTime, duration, onSeek, onClipSelect, selected
     if (tracksHeaderRef.current) {
       tracksHeaderRef.current.scrollTop = e.currentTarget.scrollTop;
     }
-
-    // Ruler stays horizontally synced by the scrollPosition state passed to it, or strictly sticky?
-    // Ruler is sticky in the layout, so it follows horizontal scroll naturally if inside the container?
-    // Actually, in this split layout, Ruler is in the right panel. It should scroll horizontally with clips.
-    // If we scroll the right panel horizontally, the ruler moves.
-    // If we scroll the right panel vertically, the ruler should STAY at top. 
-    // This is handled by CSS sticky.
   };
 
   const handleHeaderScroll = (e: React.UIEvent<HTMLDivElement>) => {
@@ -117,7 +109,9 @@ export function Timeline({ currentTime, duration, onSeek, onClipSelect, selected
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.ctrlKey || e.metaKey) {
+      // Only handle zoom if we are focused on the window (simple check)
+      // or check if active element is not an input
+      if ((e.ctrlKey || e.metaKey) && document.activeElement?.tagName !== 'INPUT' && document.activeElement?.tagName !== 'TEXTAREA') {
         const { zoom: currentZoom, currentTime: time } = stateRef.current;
 
         if (e.key === '=' || e.key === '+') {
@@ -159,14 +153,16 @@ export function Timeline({ currentTime, duration, onSeek, onClipSelect, selected
     return groups;
   }, [clips, tracks]);
 
+  const totalWidth = calculateTotalWidth();
+
   return (
-    <div className="flex flex-col h-full bg-[#18181b] border-t border-[#27272a]">
+    <div className="flex flex-col h-full bg-editor-bg">
       {/* Integrated Toolbar */}
       <TimelineToolbar
         currentTime={currentTime}
         formatTimecode={formatTimecode}
         zoom={zoom}
-        onZoomChange={setZoom}
+        onZoomChange={(newZoom) => performZoom(newZoom, currentTime)}
         magnetEnabled={magnetEnabled}
         onToggleMagnet={() => setMagnetEnabled(!magnetEnabled)}
         snappingEnabled={snappingEnabled}
@@ -179,10 +175,10 @@ export function Timeline({ currentTime, duration, onSeek, onClipSelect, selected
         <div
           ref={tracksHeaderRef}
           onScroll={handleHeaderScroll}
-          className="w-64 flex-shrink-0 bg-[#18181b] border-r border-[#27272a] overflow-hidden sticky left-0 z-50 flex flex-col pt-8" // pt-8 to align with ruler height roughly? No, Header has no ruler.
+          className="w-[120px] flex-shrink-0 bg-editor-panel border-r border-editor-border overflow-hidden sticky left-0 z-50 flex flex-col"
         >
           {/* Spacer for Ruler Height (Ruler is ~32px) */}
-          <div className="h-8 w-full bg-[#18181b] border-b border-[#27272a] flex-shrink-0" />
+          <div className="h-8 w-full bg-editor-panel border-b border-editor-border flex-shrink-0" />
 
           {/* Track Headers List */}
           <div className="flex-1 pb-4">
@@ -201,17 +197,17 @@ export function Timeline({ currentTime, duration, onSeek, onClipSelect, selected
         {/* Right Panel: Content (Scrollable) */}
         <div
           ref={tracksContentRef}
-          className="flex-1 overflow-auto scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-transparent bg-[#0f0f10]"
+          className="flex-1 overflow-auto scrollbar-thin scrollbar-thumb-zinc-700 scrollbar-track-transparent bg-zinc-950"
           onScroll={handleContentScroll}
           onWheel={handleWheel}
         >
-          <div className="relative min-w-full h-full" style={{ width: `${calculateTotalWidth()}px` }}>
+          <div className="relative min-w-full h-full" style={{ width: `${totalWidth}px` }}>
 
             {/* Sticky Ruler */}
-            <div className="sticky top-0 z-40 bg-[#18181b] w-full">
+            <div className="sticky top-0 z-40 bg-editor-panel w-full border-b border-editor-border">
               <TimelineRuler
-                totalWidth={calculateTotalWidth()}
-                maxSeekDuration={Math.max(...clips.map(c => c.start + c.duration), 10)} // Default to 10s if empty
+                totalWidth={totalWidth}
+                maxSeekDuration={Math.max(...clips.map(c => c.start + c.duration), 10)}
                 zoom={zoom}
                 onSeek={onSeek}
                 offsetX={scrollPosition}
@@ -223,8 +219,7 @@ export function Timeline({ currentTime, duration, onSeek, onClipSelect, selected
             <Playhead
               currentTime={currentTime}
               zoom={zoom}
-              height="100%" // Dynamic height
-            // Note: Playhead is absolutely positioned.
+              height="100%"
             />
 
             {/* Tracks Lanes */}
@@ -243,6 +238,42 @@ export function Timeline({ currentTime, duration, onSeek, onClipSelect, selected
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Mini-map */}
+      <div className="h-5 px-2 flex items-center gap-2 border-t border-editor-border bg-editor-panel group">
+        <div className="flex-1 h-3 bg-zinc-800/50 rounded-full overflow-hidden relative">
+          {/* Mini clip indicators */}
+          {clips.map(clip => (
+            <div
+              key={clip.id}
+              className="absolute top-0 bottom-0 bg-white/10"
+              style={{
+                left: `${(clip.start / duration) * 100}%`,
+                width: `${(clip.duration / duration) * 100}%`,
+              }}
+            />
+          ))}
+
+          {/* Viewport indicator */}
+          <div
+            className="absolute top-0 bottom-0 bg-zinc-600/50 rounded-full hover:bg-zinc-500/50 transition-colors cursor-grab active:cursor-grabbing"
+            style={{
+              left: `${(scrollPosition / totalWidth) * 100}%`,
+              width: `${(tracksContentRef.current?.clientWidth || 0) / totalWidth * 100}%`,
+            }}
+          />
+
+          {/* Playhead indicator */}
+          <div
+            className="absolute top-0 bottom-0 w-0.5 bg-playhead"
+            style={{ left: `${(currentTime / duration) * 100}%` }}
+          />
+        </div>
+
+        <span className="text-[10px] text-muted-foreground tabular-nums min-w-[80px] text-right">
+          {formatTimecode(currentTime)} / {formatTimecode(duration)}
+        </span>
       </div>
     </div>
   );

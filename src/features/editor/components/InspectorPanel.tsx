@@ -3,8 +3,11 @@ import {
   Sliders,
   MonitorPlay,
   Layers,
-  Crop
+  Crop,
+  Share2,
+  Share
 } from 'lucide-react';
+import { Button } from '@/shared/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/ui/tabs';
 import { Slider } from '@/shared/ui/slider';
 import { Input } from '@/shared/ui/input';
@@ -23,6 +26,7 @@ import { Clip } from '../types';
 
 interface InspectorPanelProps {
   selectedClip: Clip | null;
+  onExport: () => void;
 }
 
 const blendModes = [
@@ -30,7 +34,7 @@ const blendModes = [
   'Hard Light', 'Color Dodge', 'Color Burn', 'Difference'
 ];
 
-export function InspectorPanel({ selectedClip }: InspectorPanelProps) {
+export function InspectorPanel({ selectedClip, onExport }: InspectorPanelProps) {
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [scale, setScale] = useState(100);
   const [rotation, setRotation] = useState(0);
@@ -39,7 +43,7 @@ export function InspectorPanel({ selectedClip }: InspectorPanelProps) {
 
   if (!selectedClip) {
     return (
-      <div className="w-[320px] bg-editor-panel border-l border-editor-border flex flex-col h-full items-center justify-center text-center p-6">
+      <div className="w-full bg-editor-panel flex flex-col h-full items-center justify-center text-center p-6">
         <Sliders className="w-12 h-12 text-muted-foreground/20 mb-4" />
         <h3 className="text-sm font-medium mb-1">No Clip Selected</h3>
         <p className="text-xs text-muted-foreground">Select a clip in the timeline to make adjustments.</p>
@@ -48,17 +52,18 @@ export function InspectorPanel({ selectedClip }: InspectorPanelProps) {
   }
 
   return (
-    <div className="w-[320px] bg-editor-panel border-l border-editor-border flex flex-col h-full">
+    <div className="w-full bg-editor-panel flex flex-col h-full min-h-0">
       <Tabs defaultValue="video" className="flex flex-col h-full">
         {/* Main Tabs */}
-        <div className="bg-editor-panel-header px-2 pt-2 border-b border-editor-border">
-          <TabsList className="bg-transparent w-full h-auto p-0 justify-start gap-6 border-b border-transparent">
+        {/* Main Tabs and Actions */}
+        <div className="bg-editor-panel-header px-2 border-b border-editor-border flex items-center justify-between h-12">
+          <TabsList className="bg-transparent h-full p-0 gap-4 border-b border-transparent">
             {['video', 'audio', 'animation', 'speed', 'adjust'].map((tab) => (
               <TabsTrigger
                 key={tab}
                 value={tab}
                 className="
-                  px-0 py-2 text-xs font-medium bg-transparent rounded-none border-b-2 border-transparent
+                  px-0 h-full text-xs font-medium bg-transparent rounded-none border-b-2 border-transparent
                   data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:border-primary
                   hover:text-foreground transition-colors
                 "
@@ -67,6 +72,20 @@ export function InspectorPanel({ selectedClip }: InspectorPanelProps) {
               </TabsTrigger>
             ))}
           </TabsList>
+
+          <div className="flex items-center gap-2">
+            <div className="bg-gradient-to-r from-indigo-500/20 to-purple-500/20 border border-indigo-500/30 rounded px-2 py-1 flex items-center gap-1 cursor-pointer hover:bg-white/5 transition-colors">
+              <div className="text-[10px] font-medium text-indigo-300 flex items-center gap-1">
+                <span>💎</span> Volte para o Pro
+              </div>
+            </div>
+            <Button size="sm" variant="secondary" className="h-7 text-xs gap-1 bg-[#27272a] hover:bg-[#3f3f46] border border-white/5">
+              <Share2 size={12} /> Compartilhar
+            </Button>
+            <Button size="sm" className="h-7 text-xs bg-cyan-500 hover:bg-cyan-600 text-black font-medium px-3 gap-1" onClick={onExport}>
+              <Share size={12} className="rotate-90" /> Exportar
+            </Button>
+          </div>
         </div>
 
         {/* Video Tab Content */}

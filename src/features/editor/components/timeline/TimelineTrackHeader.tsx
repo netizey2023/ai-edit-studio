@@ -18,53 +18,51 @@ export const TimelineTrackHeader: React.FC<TimelineTrackHeaderProps> = ({
 
     const getIcon = () => {
         switch (track.type) {
-            case 'video': return <Film className="w-3 h-3 text-blue-400" />;
-            case 'audio': return <Music className="w-3 h-3 text-green-400" />;
-            default: return <Film className="w-3 h-3" />;
+            case 'video': return <Film className="w-4 h-4 text-blue-400" />;
+            case 'audio': return <Music className="w-4 h-4 text-green-400" />;
+            default: return <Film className="w-4 h-4" />;
         }
     };
 
     return (
         <div
-            className="w-full bg-[#18181b] border-b border-[#27272a] flex flex-col justify-center px-2 relative group"
+            className="w-full bg-editor-panel border-b border-editor-border flex flex-col items-center justify-center px-0 relative group gap-2"
             style={{ height: `${height}px` }}
         >
-            <div className="flex items-center justify-between mb-1">
-                <div className="flex items-center gap-1.5 opacity-70 group-hover:opacity-100 transition-opacity">
-                    {getIcon()}
-                    <span className="text-[10px] text-gray-300 font-medium truncate w-20">{track.name}</span>
+            {/* Track Controls (Always visible or visible on hover) */}
+            <div className="flex flex-col items-center gap-1.5 w-full">
+                <div className="flex items-center justify-center gap-2 px-1">
+                    <div className="opacity-70 mr-1 flex-shrink-0">
+                        {getIcon()}
+                    </div>
+                    <button
+                        onClick={() => onToggleTrackProperty(track.id, 'muted')}
+                        className={`p-0 rounded-sm hover:bg-white/10 flex-shrink-0 ${track.muted ? 'text-red-400' : 'text-gray-500 hover:text-gray-300'}`}
+                        title={track.muted ? "Unmute" : "Mute"}
+                    >
+                        {track.muted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+                    </button>
+                    <button
+                        onClick={() => onToggleTrackProperty(track.id, 'locked')}
+                        className={`p-0 rounded-sm hover:bg-white/10 flex-shrink-0 ${track.locked ? 'text-yellow-400' : 'text-gray-500 hover:text-gray-300'}`}
+                        title={track.locked ? "Unlock" : "Lock"}
+                    >
+                        <Lock className="w-4 h-4" />
+                    </button>
+                    <button
+                        onClick={() => onToggleTrackProperty(track.id, 'visible')}
+                        className={`p-0 rounded-sm hover:bg-white/10 flex-shrink-0 ${!track.visible ? 'text-gray-600' : 'text-gray-500 hover:text-gray-300'}`}
+                        title={track.visible ? "Hide" : "Show"}
+                    >
+                        {track.visible ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+                    </button>
                 </div>
             </div>
 
-            {/* Track Controls */}
-            <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                <button
-                    onClick={() => onToggleTrackProperty(track.id, 'muted')}
-                    className={`p-0.5 rounded ${track.muted ? 'text-red-400' : 'text-gray-500 hover:text-gray-300'}`}
-                >
-                    {track.muted ? <VolumeX className="w-3 h-3" /> : <Volume2 className="w-3 h-3" />}
-                </button>
-                <button
-                    onClick={() => onToggleTrackProperty(track.id, 'locked')}
-                    className={`p-0.5 rounded ${track.locked ? 'text-yellow-400' : 'text-gray-500 hover:text-gray-300'}`}
-                >
-                    <Lock className="w-3 h-3" />
-                </button>
-                <button
-                    onClick={() => onToggleTrackProperty(track.id, 'visible')}
-                    className={`p-0.5 rounded ${!track.visible ? 'text-gray-600' : 'text-gray-500 hover:text-gray-300'}`}
-                >
-                    {track.visible ? <Eye className="w-3 h-3" /> : <EyeOff className="w-3 h-3" />}
-                </button>
-            </div>
-
-            {/* Cover Button (Main Track Only) */}
+            {/* Minimal Capa Icon for Main Track */}
             {isMain && (
-                <div className="absolute right-2 top-1/2 -translate-y-1/2 z-20">
-                    <div className="bg-[#18181b] border border-[#27272a] rounded px-2 py-1 cursor-pointer shadow-sm hover:bg-[#27272a] flex items-center gap-1">
-                        <ImageIcon className="w-3 h-3 text-gray-400" />
-                        <span className="text-[10px] text-gray-400">Capa</span>
-                    </div>
+                <div className="absolute left-1 top-1">
+                    {/* Placeholder if needed, but for w-14, icons are enough */}
                 </div>
             )}
         </div>

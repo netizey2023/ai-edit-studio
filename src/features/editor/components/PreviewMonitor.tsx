@@ -2,23 +2,25 @@ import { useState } from 'react';
 import {
   Play,
   Pause,
-  SkipBack,
-  SkipForward,
-  ChevronLeft,
-  ChevronRight,
   Maximize2,
-  Volume2,
-  Settings
+  Menu,
+  Scan,
+  Settings,
+  RectangleHorizontal,
+  RectangleVertical,
+  Square,
+  Monitor,
+  Settings2
 } from 'lucide-react';
 import { Button } from '@/shared/ui/button';
-import { Slider } from '@/shared/ui/slider';
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/shared/ui/select';
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+  DropdownMenuCheckboxItem,
+} from "@/shared/ui/dropdown-menu";
 
 interface PreviewMonitorProps {
   currentTime: number;
@@ -35,134 +37,153 @@ export function PreviewMonitor({
   onPlayPause,
   onSeek
 }: PreviewMonitorProps) {
-  const [quality, setQuality] = useState('full');
-  const [volume, setVolume] = useState(80);
-
-  const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
+  // Format as HH:MM:SS:FF
+  const formatTimeFull = (seconds: number) => {
+    const hours = Math.floor(seconds / 3600);
+    const mins = Math.floor((seconds % 3600) / 60);
     const secs = Math.floor(seconds % 60);
-    const frames = Math.floor((seconds % 1) * 60);
-    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}:${frames.toString().padStart(2, '0')}`;
+    const frames = Math.floor((seconds % 1) * 30); // Assuming 30fps for display
+
+
+
+    return `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}:${frames.toString().padStart(2, '0')}`;
   };
 
+  const [aspectRatio, setAspectRatio] = useState("16:9");
+
   return (
-    <div className="flex flex-col h-full bg-editor-bg">
-      {/* Preview Header */}
-      <div className="h-8 px-3 flex items-center justify-between border-b border-editor-border bg-editor-panel">
-        <span className="text-xs text-muted-foreground">Program Monitor</span>
-        <div className="flex items-center gap-2">
-          <Select value={quality} onValueChange={setQuality}>
-            <SelectTrigger className="h-6 w-24 text-xs bg-secondary border-0">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="full">Full Quality</SelectItem>
-              <SelectItem value="half">1/2 Quality</SelectItem>
-              <SelectItem value="quarter">1/4 Quality</SelectItem>
-            </SelectContent>
-          </Select>
-          <Button size="sm" variant="ghost" className="h-6 w-6 p-0">
-            <Settings className="w-3.5 h-3.5" />
+    <div className="flex flex-col h-full bg-editor-panel min-h-0 select-none">
+      {/* Header */}
+      <div className="h-10 px-4 flex items-center justify-between bg-editor-panel border-b border-editor-border">
+        <span className="text-sm font-medium text-gray-200">Reprodutor</span>
+
+        {/* Menu Icon with Dot */}
+        <div className="relative">
+          <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-400 hover:text-white">
+            <Menu size={16} />
           </Button>
+          <div className="absolute top-2 right-2 w-1.5 h-1.5 bg-cyan-400 rounded-full border border-editor-panel" />
         </div>
       </div>
 
       {/* Video Display Area */}
-      <div className="flex-1 flex items-center justify-center p-4 relative">
-        {/* Rulers */}
-        <div className="absolute top-0 left-4 right-4 h-4 bg-timeline-ruler flex items-end">
-          {Array.from({ length: 20 }).map((_, i) => (
-            <div key={i} className="flex-1 border-r border-muted-foreground/30 text-[8px] text-muted-foreground pl-0.5">
-              {i * 50}
-            </div>
-          ))}
-        </div>
-        <div className="absolute left-0 top-4 bottom-20 w-4 bg-timeline-ruler flex flex-col">
-          {Array.from({ length: 10 }).map((_, i) => (
-            <div key={i} className="flex-1 border-b border-muted-foreground/30 text-[8px] text-muted-foreground">
-              {i * 50}
-            </div>
-          ))}
-        </div>
+      <div className="flex-1 flex items-center justify-center bg-zinc-900/50 relative min-h-0 overflow-hidden group">
 
-        {/* Video Frame */}
-        <div className="relative w-full max-w-2xl aspect-video bg-black rounded-sm overflow-hidden border border-editor-border">
-          {/* Safe Zone Guides */}
-          <div className="absolute inset-[5%] border border-dashed border-primary/30 pointer-events-none" />
-          <div className="absolute inset-[10%] border border-dashed border-primary/20 pointer-events-none" />
-
-          {/* Center Crosshair */}
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-8 h-8">
-            <div className="absolute top-1/2 left-0 right-0 h-px bg-primary/40" />
-            <div className="absolute left-1/2 top-0 bottom-0 w-px bg-primary/40" />
-          </div>
-
+        {/* Main Video Frame */}
+        <div className="relative aspect-video bg-black w-full max-w-[90%] max-h-[85%] shadow-2xl ring-1 ring-white/10">
           {/* Placeholder Content */}
           <div className="absolute inset-0 flex items-center justify-center">
-            <div className="text-center">
-              <div className="w-16 h-16 rounded-full border-2 border-muted-foreground/30 flex items-center justify-center mb-2 mx-auto">
-                <Play className="w-6 h-6 text-muted-foreground/50 ml-1" />
+            {!isPlaying && (
+              <div className="text-center opacity-30">
+                <div className="w-16 h-16 rounded-full border-2 border-white/20 flex items-center justify-center mb-2 mx-auto">
+                  <Play className="w-6 h-6 text-white ml-1" />
+                </div>
               </div>
-              <p className="text-sm text-muted-foreground">No clip selected</p>
-            </div>
+            )}
+
+            {/* Here would be the actual video element */}
           </div>
         </div>
       </div>
 
-      {/* Transport Controls */}
-      <div className="h-16 px-4 border-t border-editor-border bg-editor-panel flex items-center gap-4">
-        {/* Timecode Display */}
-        <div className="font-mono text-sm bg-secondary px-3 py-1.5 rounded tabular-nums">
-          {formatTime(currentTime)}
+      {/* Footer / Transport Controls */}
+      <div className="h-12 px-4 border-t border-editor-border bg-editor-panel flex items-center justify-between">
+
+        {/* Left: Timecodes */}
+        <div className="flex items-center gap-2 font-mono text-xs">
+          <span className="text-cyan-400">{formatTimeFull(currentTime)}</span>
+          <span className="text-gray-500">/</span>
+          <span className="text-gray-200">{formatTimeFull(duration)}</span>
         </div>
 
-        {/* Playback Controls */}
-        <div className="flex items-center gap-1">
-          <Button size="sm" variant="ghost" className="h-8 w-8 p-0" onClick={() => onSeek(0)}>
-            <SkipBack className="w-4 h-4" />
-          </Button>
-          <Button size="sm" variant="ghost" className="h-8 w-8 p-0" onClick={() => onSeek(Math.max(0, currentTime - 1 / 60))}>
-            <ChevronLeft className="w-4 h-4" />
-          </Button>
+        {/* Center: Play Control */}
+        <div className="absolute left-1/2 -translate-x-1/2">
           <Button
-            size="sm"
             variant="ghost"
-            className="h-10 w-10 p-0 hover:bg-primary/20"
+            size="icon"
+            className="h-8 w-8 text-gray-200 hover:text-white hover:bg-white/10"
             onClick={onPlayPause}
           >
-            {isPlaying ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5 ml-0.5" />}
-          </Button>
-          <Button size="sm" variant="ghost" className="h-8 w-8 p-0" onClick={() => onSeek(Math.min(duration, currentTime + 1 / 60))}>
-            <ChevronRight className="w-4 h-4" />
-          </Button>
-          <Button size="sm" variant="ghost" className="h-8 w-8 p-0" onClick={() => onSeek(duration)}>
-            <SkipForward className="w-4 h-4" />
+            {isPlaying ? <Pause className="fill-current" size={18} /> : <Play className="fill-current" size={18} />}
           </Button>
         </div>
 
-        {/* Duration */}
-        <div className="font-mono text-xs text-muted-foreground tabular-nums">
-          / {formatTime(duration)}
+        {/* Right: Tools */}
+        <div className="flex items-center gap-3">
+          {/* Fill Button */}
+          <div className="bg-secondary rounded px-2 py-0.5 border border-white/10 cursor-pointer hover:bg-secondary/80 transition-colors">
+            <span className="text-[10px] text-gray-300">Preenchimento</span>
+          </div>
+
+          {/* Ratio Button */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <div className="bg-secondary rounded px-2 py-0.5 border border-white/10 cursor-pointer hover:bg-secondary/80 transition-colors">
+                <span className="text-[10px] text-gray-300">Proporção</span>
+              </div>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-48 bg-editor-panel border-editor-border text-gray-200">
+              <DropdownMenuCheckboxItem checked={aspectRatio === "Original"} onCheckedChange={() => setAspectRatio("Original")}>
+                <span>Original</span>
+                <Monitor className="ml-auto h-4 w-4 text-muted-foreground" />
+              </DropdownMenuCheckboxItem>
+              <DropdownMenuCheckboxItem checked={aspectRatio === "Personalizado"} onCheckedChange={() => setAspectRatio("Personalizado")}>
+                <span>Personalizado</span>
+                <Settings2 className="ml-auto h-4 w-4 text-muted-foreground" />
+              </DropdownMenuCheckboxItem>
+
+              <DropdownMenuSeparator className="bg-editor-border" />
+
+              <DropdownMenuCheckboxItem checked={aspectRatio === "16:9"} onCheckedChange={() => setAspectRatio("16:9")}>
+                <span>16:9</span>
+                <RectangleHorizontal className="ml-auto h-4 w-4 text-muted-foreground" />
+              </DropdownMenuCheckboxItem>
+              <DropdownMenuCheckboxItem checked={aspectRatio === "4:3"} onCheckedChange={() => setAspectRatio("4:3")}>
+                <span>4:3</span>
+                <RectangleHorizontal className="ml-auto h-4 w-4 text-muted-foreground" />
+              </DropdownMenuCheckboxItem>
+              <DropdownMenuCheckboxItem checked={aspectRatio === "2.35:1"} onCheckedChange={() => setAspectRatio("2.35:1")}>
+                <span>2.35:1</span>
+                <RectangleHorizontal className="ml-auto h-4 w-4 text-muted-foreground" />
+              </DropdownMenuCheckboxItem>
+              <DropdownMenuCheckboxItem checked={aspectRatio === "2:1"} onCheckedChange={() => setAspectRatio("2:1")}>
+                <span>2:1</span>
+                <RectangleHorizontal className="ml-auto h-4 w-4 text-muted-foreground" />
+              </DropdownMenuCheckboxItem>
+              <DropdownMenuCheckboxItem checked={aspectRatio === "1.85:1"} onCheckedChange={() => setAspectRatio("1.85:1")}>
+                <span>1.85:1</span>
+                <RectangleHorizontal className="ml-auto h-4 w-4 text-muted-foreground" />
+              </DropdownMenuCheckboxItem>
+
+              <DropdownMenuSeparator className="bg-editor-border" />
+
+              <DropdownMenuCheckboxItem checked={aspectRatio === "9:16"} onCheckedChange={() => setAspectRatio("9:16")}>
+                <span>9:16</span>
+                <RectangleVertical className="ml-auto h-4 w-4 text-muted-foreground" />
+              </DropdownMenuCheckboxItem>
+              <DropdownMenuCheckboxItem checked={aspectRatio === "3:4"} onCheckedChange={() => setAspectRatio("3:4")}>
+                <span>3:4</span>
+                <RectangleVertical className="ml-auto h-4 w-4 text-muted-foreground" />
+              </DropdownMenuCheckboxItem>
+              <DropdownMenuCheckboxItem checked={aspectRatio === "5.8\""} onCheckedChange={() => setAspectRatio("5.8\"")}>
+                <span>5.8 polegadas</span>
+                <RectangleVertical className="ml-auto h-4 w-4 text-muted-foreground" />
+              </DropdownMenuCheckboxItem>
+              <DropdownMenuCheckboxItem checked={aspectRatio === "1:1"} onCheckedChange={() => setAspectRatio("1:1")}>
+                <span>1:1</span>
+                <Square className="ml-auto h-4 w-4 text-muted-foreground" />
+              </DropdownMenuCheckboxItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          <Button variant="ghost" size="icon" className="h-7 w-7 text-gray-400 hover:text-white" title="Focus Mode">
+            <Scan size={16} />
+          </Button>
+
+          <Button variant="ghost" size="icon" className="h-7 w-7 text-gray-400 hover:text-white" title="Fullscreen">
+            <Maximize2 size={16} />
+          </Button>
         </div>
-
-        <div className="flex-1" />
-
-        {/* Volume Control */}
-        <div className="flex items-center gap-2 w-32">
-          <Volume2 className="w-4 h-4 text-muted-foreground" />
-          <Slider
-            value={[volume]}
-            onValueChange={([v]) => setVolume(v)}
-            max={100}
-            step={1}
-            className="flex-1"
-          />
-        </div>
-
-        {/* Fullscreen */}
-        <Button size="sm" variant="ghost" className="h-8 w-8 p-0">
-          <Maximize2 className="w-4 h-4" />
-        </Button>
       </div>
     </div>
   );
